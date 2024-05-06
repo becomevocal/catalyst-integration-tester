@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
+console.log('NODE ENV', process.env)
+
 const integrationsPath = path.join(__dirname);
 const configFilePath = path.join(__dirname, '..', 'tailwind.config.js');
 const catalystFilePath = path.join(__dirname, '..', 'catalyst.json');
