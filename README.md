@@ -33,7 +33,7 @@ times before. You can instead go straight to work building your brand and making
 
 ## Deploy w/ WP Integration
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET&build-command=node%20integrations/processIntegrations.cjs%20-f%20-s%20wordpress%20%26%26node%20npm%20run%20build)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET&build-command=npm%20run%20initialize%20--integration=wordpress)
 
 ## Requirements
 

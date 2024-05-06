@@ -7,6 +7,7 @@
     "lint": "next lint",
     "test": "jest",
     "dev": "npm run generate && next dev",
+    "initialize": "node integrations/processIntegrations.cjs -f -s ${npm_config_integration} && npm run build",
     "generate": "dotenv -e .env.local -- node ./scripts/generate.cjs",
     "build": "npm run generate && next build",
     "start": "next start"

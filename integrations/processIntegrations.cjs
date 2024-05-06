@@ -3,7 +3,18 @@ const path = require('path');
 const readline = require('readline');
 
 const integrationsPath = path.join(__dirname);
+const configFilePath = path.join(__dirname, '..', 'tailwind.config.js');
 const catalystFilePath = path.join(__dirname, '..', 'catalyst.json');
+
+// Parse command-line arguments
+const args = process.argv.slice(2);
+const forceConfirm = args.includes('-f');
+let selectedIntegrationName = null;
+const selectedIndexArg = args.findIndex(arg => arg === '-s');
+if (selectedIndexArg !== -1 && args.length > selectedIndexArg + 1) {
+  selectedIntegrationName = args[selectedIndexArg + 1];
+}
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -32,18 +43,26 @@ async function listIntegrations() {
 
 function askForSelection(question) {
   return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      resolve(answer.trim());
-    });
+    if (forceConfirm) {
+      resolve('y');
+    } else {
+      rl.question(question, (answer) => {
+        resolve(answer.trim());
+      });
+    }
   });
 }
 
 function askForConfirmation(question) {
   return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      // Accept 'y' or 'yes' (case-insensitive)
+    if (forceConfirm) {
+      resolve(true);
+    } else {
+      rl.question(question, (answer) => {
+        // Accepts 'y' or 'yes' (case-insensitive)
       resolve(answer.trim().toLowerCase().startsWith('y'));
-    });
+      });
+    }
   });
 }
 
@@ -100,6 +119,28 @@ async function processIntegration(integration) {
           fs.appendFileSync(destPath, content);
           console.log(`Successfully appended contents to ${addition.to}`);
           recordIntegration(integration.directoryName, 'added', addition);
+        } else if (addition.to === 'tailwind.config.js') {
+          fs.readFile(configFilePath, 'utf8', (err, data) => {
+            if (err) {
+              console.error('Error reading Tailwind config file:', err);
+              return;
+            }
+
+            // Define the new path to add
+            const newPath = addition.with;
+
+            // Regex to find the content array and add a new path
+            const regex = new RegExp(`(${addition.key}:\\s*\\[[^\\]]*)(\\])`, 'g');
+            const updatedConfig = data.replace(regex, `$1, '${newPath}'$2`);
+
+            fs.writeFile(configFilePath, updatedConfig, 'utf8', (err) => {
+              if (err) {
+                console.error('Error writing Tailwind config file:', err);
+                return;
+              }
+              console.log(`Tailwind config file '${addition.key}' key updated successfully!`);
+            });
+          });
         } else if (addition.to === 'graphql-client') {
           const { key, source } = addition;
           // Process graphql-client addition here
@@ -160,6 +201,7 @@ async function main() {
           await processIntegration(selectedIntegration);
         } else {
           console.log('Integration process cancelled.');
+          rl.close();
         }
       } else {
         await processIntegration(selectedIntegration);
@@ -171,21 +213,32 @@ async function main() {
 }
 
 async function selectIntegration(integrations) {
-  console.log('Available Integrations:');
-  integrations.forEach((integration, index) => {
-    console.log(`${index + 1}: ${integration.name}`);
-  });
-
-  const input = await askForSelection('Enter the number of the integration you want to process: ');
-  const index = parseInt(input, 10) - 1;
-
-  if (!isNaN(index) && index >= 0 && index < integrations.length) {
-    console.log(`\nSelected: ${integrations[index].name}`);
-    console.log(`Description: ${integrations[index].description}`);
-    return integrations[index];
+  if (selectedIntegrationName) {
+    const integration = integrations.find(int => int.directoryName === selectedIntegrationName);
+    if (integration) {
+      console.log(`Automatically selected: ${integration.name}`);
+      console.log(`Description: ${integration.description}`);
+      return integration;
+    } else {
+      console.log(`No integration found with directory name: ${selectedIntegrationName}`);
+    }
   } else {
-    console.log('\n*Invalid selection. Please enter a valid number.* \n');
-    return selectIntegration(integrations);  // Recurse until a valid input is given
+    console.log('Available Integrations:');
+    integrations.forEach((integration, index) => {
+      console.log(`${index + 1}: ${integration.name}`);
+    });
+
+    const input = await askForSelection('Enter the number of the integration you want to process: ');
+    const index = parseInt(input, 10) - 1;
+
+    if (!isNaN(index) && index >= 0 && index < integrations.length) {
+      console.log(`\nSelected: ${integrations[index].name}`);
+      console.log(`Description: ${integrations[index].description}`);
+      return integrations[index];
+    } else {
+      console.log('\n*Invalid selection. Please enter a valid number.* \n');
+      return selectIntegration(integrations);  // Recurse until a valid input is given
+    }
   }
 }
 
