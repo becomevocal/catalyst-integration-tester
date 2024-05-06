@@ -31,6 +31,10 @@ times before. You can instead go straight to work building your brand and making
 
 </div>
 
+## Deploy w/ WP Integration
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET&build-command=node integrations/processIntegrations.cjs -f -s wordpress %26%26 node npm run build)
+
 ## Requirements
 
 - Node.js 20+
