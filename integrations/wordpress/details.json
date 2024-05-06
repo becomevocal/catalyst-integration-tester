@@ -1,0 +1,35 @@
+{
+  "name": "WordPress w/ Gutenberg to TailwindCSS conversion",
+  "description": "Replaces the built-in blog and webpages with WordPress. The pages support the Gutenberg editor through on-the-fly replacement of wp-* classes with TailwindCSS.",
+  "replaces": [
+    {
+      "dir": "app/[locale]/(default)/(webpages)",
+      "method": "fs-copy",
+      "with": "./routes/app/webpages"
+    },
+    {
+      "dir": "app/[locale]/(default)/blog",
+      "method": "fs-copy",
+      "with": "./routes/app/blog"
+    }
+  ],
+  "adds": [
+    {
+      "to": "app/globals.css",
+      "method": "append",
+      "fileContents": "./css/globals.css"
+    },
+    {
+      "to": ".env.local",
+      "method": "append",
+      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT"
+    },
+    { "to": "graphql-client", "key": "wordpress", "source": "" }
+  ],
+  "preInstall": {
+    "instructions": "You should first install the WP GraphQL plugin to your website: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard"
+  },
+  "postInstall": {
+    "instructions": "You should now update the ENV variable for your WordPress GraphQL endpoint."
+  }
+}
