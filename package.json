@@ -7,7 +7,7 @@
     "lint": "next lint",
     "test": "jest",
     "dev": "npm run generate && next dev",
-    "initialize": "node integrations/processIntegrations.cjs -f -s ${npm_config_integration} && git commit -am 'Add integration' && git remote add origin https://github.com/${NEXT_PUBLIC_VERCEL_GIT_REPO_OWNER}/${VERCEL_GIT_REPO_SLUG}.git && git push -f origin && npm run build",
+    "initialize": "node integrations/processIntegrations.cjs -f -s ${npm_config_integration} && git commit -am 'Add integration' && git remote add origin https://github.com/${NEXT_PUBLIC_VERCEL_GIT_REPO_OWNER}/${VERCEL_GIT_REPO_SLUG}.git && git push --set-upstream origin main && npm run build",
     "generate": "dotenv -e .env.local -- node ./scripts/generate.cjs",
     "build": "npm run generate && next build",
     "start": "next start"
