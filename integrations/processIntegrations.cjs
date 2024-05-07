@@ -2,8 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-console.log('NODE ENV', process.env)
-
 const integrationsPath = path.join(__dirname);
 const configFilePath = path.join(__dirname, '..', 'tailwind.config.js');
 const catalystFilePath = path.join(__dirname, '..', 'catalyst.json');
@@ -135,7 +133,7 @@ async function processIntegration(integration) {
             const regex = new RegExp(`(${addition.key}:\\s*\\[[^\\]]*)(\\])`, 'g');
             const updatedConfig = data.replace(regex, `$1, '${newPath}'$2`);
 
-            fs.writeFile(configFilePath, updatedConfig, 'utf8', (err) => {
+            fs.writeFileSync(configFilePath, updatedConfig, 'utf8', (err) => {
               if (err) {
                 console.error('Error writing Tailwind config file:', err);
                 return;

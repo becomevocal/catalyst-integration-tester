@@ -24,6 +24,11 @@
       "method": "append",
       "envVar": "WORDPRESS_GRAPHQL_ENDPOINT"
     },
+    {
+      "to": "tailwind.config.js",
+      "key": "content",
+      "with": "./integrations/**/*.{ts,tsx}"
+    },
     { "to": "graphql-client", "key": "wordpress", "source": "" }
   ],
   "preInstall": {
