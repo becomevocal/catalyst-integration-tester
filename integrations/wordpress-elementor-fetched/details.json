@@ -1,0 +1,39 @@
+{
+  "name": "WordPress w/ Elementor (scraped styles and scripts)",
+  "description": "Replaces the built-in blog and webpages with WordPress + Elementor. The styles are brought in by scraping the html of the site to find the stylesheets and style tags.",
+  "replaces": [
+    {
+      "dir": "app/[locale]/(default)/(webpages)",
+      "method": "fs-copy",
+      "with": "./routes/app/webpages"
+    },
+    {
+      "dir": "app/[locale]/(default)/blog",
+      "method": "fs-copy",
+      "with": "./routes/app/blog"
+    }
+  ],
+  "adds": [
+    {
+      "to": ".env.local",
+      "method": "append",
+      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT"
+    },
+    {
+      "to": "app/globals.css",
+      "method": "function",
+      "file": "./build-functions/fetch-styles.cjs"
+    },
+    {
+      "to": "app/[locale]/layout.tsx",
+      "method": "function",
+      "file": "./build-functions/fetch-scripts.cjs"
+    }
+  ],
+  "preInstall": {
+    "instructions": "You should first install the WP GraphQL plugin to your website: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard"
+  },
+  "postInstall": {
+    "instructions": "You should now update the ENV variable for your WordPress GraphQL endpoint."
+  }
+}

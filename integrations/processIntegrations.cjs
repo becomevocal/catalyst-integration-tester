@@ -60,7 +60,7 @@ function askForConfirmation(question) {
     } else {
       rl.question(question, (answer) => {
         // Accepts 'y' or 'yes' (case-insensitive)
-      resolve(answer.trim().toLowerCase().startsWith('y'));
+        resolve(answer.trim().toLowerCase().startsWith('y'));
       });
     }
   });
@@ -77,8 +77,13 @@ async function processIntegration(integration) {
 
   if (details.replaces && details.replaces.length > 0) {
     for (const replacement of details.replaces) {
-      const srcPath = path.resolve(__dirname, '..' , 'integrations', integration.directoryName, replacement.with);
+      const srcPath = path.resolve(integrationsPath, integration.directoryName, replacement.with);
       const destPath = path.resolve(__dirname, '..', replacement.dir);
+
+      if (!srcPath.startsWith(integrationsPath) || !destPath.startsWith(path.resolve(__dirname, '..'))) {
+        console.error('Invalid path detected. Aborting operation.');
+        continue;
+      }
 
       const confirm = await askForConfirmation(`\nReplace ${destPath} with ${srcPath}? (yes/no) `);
       if (confirm) {
@@ -104,12 +109,16 @@ async function processIntegration(integration) {
 
   if (details.adds && details.adds.length > 0) {
     for (const addition of details.adds) {
-      const confirm = await askForConfirmation(`\Add to ${addition.to}? (yes/no) `);
+      const confirm = await askForConfirmation(`\nAdd to ${addition.to}? (yes/no) `);
       if (confirm) {
         if (addition.method === 'append' && (addition.fileContents || addition.envVar)) {
-          let content = ''
+          let content = '';
           if (addition.fileContents) {
-            const srcPath = path.resolve(__dirname, '..' , 'integrations', integration.directoryName, addition.fileContents);
+            const srcPath = path.resolve(integrationsPath, integration.directoryName, addition.fileContents);
+            if (!srcPath.startsWith(integrationsPath)) {
+              console.error('Invalid file content path detected. Aborting operation.');
+              continue;
+            }
             content = "\n" + fs.readFileSync(srcPath, 'utf8');
           } else if (addition.envVar) {
             content = "\n" + addition.envVar + '=""';
@@ -146,6 +155,28 @@ async function processIntegration(integration) {
           // Process graphql-client addition here
 
           recordIntegration(integration.directoryName, 'added', addition);
+        } else if (addition.method === 'function' && addition.file) {
+          // Validate that the function file is within the integrations directory
+          const functionPath = path.resolve(integrationsPath, integration.directoryName, addition.file);
+          if (!functionPath.startsWith(integrationsPath)) {
+            console.error(`Function file ${addition.file} is not in the integrations directory.`);
+            continue;
+          }
+
+          // Dynamically require and execute the function
+          try {
+            const runFunction = require(functionPath);
+            const destPath = path.resolve(__dirname, '..', addition.to);
+            if (!destPath.startsWith(path.resolve(__dirname, '..'))) {
+              console.error('Invalid destination path detected. Aborting operation.');
+              continue;
+            }
+            await runFunction(destPath);
+            console.log(`Successfully processed ${addition.to} using custom function`);
+            recordIntegration(integration.directoryName, 'added', addition);
+          } catch (err) {
+            console.error(`Error processing ${addition.to} using custom function:`, err);
+          }
         } else {
           console.log(`Unknown method ${addition.method}`);
         }
@@ -176,9 +207,9 @@ async function recordIntegration(integrationName, action, details) {
   if (!catalyst[integrationName]) {
     catalyst[integrationName] = [];
   }
-  catalyst[integrationName].push({ 
-    date: currentDate, 
-    action, 
+  catalyst[integrationName].push({
+    date: currentDate,
+    action,
     details
   });
 
