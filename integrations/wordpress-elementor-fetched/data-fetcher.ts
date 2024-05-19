@@ -109,20 +109,13 @@ export async function getWordPressPage(params: SinglePageParams) {
   const apiResponse = await fetchWordPressData({
     query: `query Page($path: ID!) {
       page(id: $path, idType: URI) {
+        databaseId
         title
-        content
+        elementorContent
+        excerpt(format: RENDERED)
         slug
         uri
-        enqueuedStylesheets {
-          nodes {
-            src
-            rel
-            media
-            path
-            title
-            handle
-          }
-        }
+        elementorKitId
       }
     }`,
     variables: { path },
@@ -140,8 +133,8 @@ export async function fetchWordPressData({ query, variables }: fetchWordPressDat
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
 
-    console.log('query', query);
-    console.log('variables', variables);
+    // console.log('query', query);
+    // console.log('variables', variables);
 
     const graphql = JSON.stringify({
       query,

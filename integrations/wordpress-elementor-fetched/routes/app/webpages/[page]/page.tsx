@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { WordPressBlocksRenderer } from '~/integrations/wordpress-elementor-fetched/server-components';
-import { getWordPressPage } from '~/integrations/wordpress-elementor-fetched/data-fetcher';
-
+import { PageContent } from '../_components/page-content';
 import { ElementorScriptReinitializer } from '../_components/elementor-script-handler';
+
+import { getWordPressPage } from '~/integrations/wordpress-elementor-fetched/data-fetcher';
 
 interface Props {
   params: { page: string; locale: string };
@@ -18,12 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     notFound();
   }
 
-  const { title } = webpage;
+  const { title, excerpt } = webpage;
 
   return {
     title,
-    description: '', //seo.metaDescription,
-    keywords: '', //seo.metaKeywords,
+    // Strip html tags from excerpt before using it as meta description
+    description: excerpt?.replace(/(<([^>]+)>)/gi, ''),
+    keywords: '',
   };
 }
 
@@ -38,10 +39,8 @@ export default async function WebPage({ params: { locale, page } }: Props) {
   return (
     <>
       <ElementorScriptReinitializer />
-      <div
-        className={`elementor-kit-${webpage.data.page.elementorKitId} mx-0 pl-0 sm:-mx-10 sm:pl-10 lg:-mx-12 lg:pl-12`}
-      >
-        <WordPressBlocksRenderer data={webpage.data.page} />
+      <div className={`elementor-kit-${webpage.data.page.elementorKitId} mx-0 pl-0 sm:-mx-10 sm:pl-10 lg:-mx-12 lg:pl-12`}>
+        <PageContent content={webpage.data.page.elementorContent} />
       </div>
     </>
   );

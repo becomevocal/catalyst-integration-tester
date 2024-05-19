@@ -18,21 +18,32 @@ console.log(`Environment: ${env}`);
 // Log the WORDPRESS_GRAPHQL_ENDPOINT environment variable
 console.log(`WORDPRESS_GRAPHQL_ENDPOINT: ${process.env.WORDPRESS_GRAPHQL_ENDPOINT}`);
 
-async function scrapeStylesFromURL(url) {
+async function scrapeStylesFromURL(url, extraImports) {
   try {
     // ?LSCWP_CTRL=before_optm removes common Litespeed caching optmizations that prevent 
     // style and link tags from coming across the wire initially
     const response = await fetch(url?.replace("/graphql","?LSCWP_CTRL=before_optm"));
     const html = await response.text();
 
-    let styleImports = '';
+    let styleImports = [];
     let inlineStyles = '';
 
     // Regex to match <link rel="stylesheet" href="...">
     const linkRegex = /<link\s+[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi;
     let match;
     while ((match = linkRegex.exec(html)) !== null) {
-      styleImports += `@import url("${match[1]}");\n`;
+      styleImports.push(match[1]);
+    }
+
+    let styleImportsString = '';
+    for (const url of styleImports) {
+      styleImportsString += `@import url("${url}");\n`;
+      // Remove entries from extraImports if there is a partial match of the url
+      extraImports = extraImports.filter(importUrl => !importUrl.includes(url));
+    }
+
+    for (const url of extraImports) {
+      styleImportsString += `@import url("${process.env.WORDPRESS_GRAPHQL_ENDPOINT}${url}");\n`;
     }
 
     // Resetting the lastIndex property to ensure multiple matches for styleRegex
@@ -47,20 +58,20 @@ async function scrapeStylesFromURL(url) {
     // Resetting the lastIndex property to ensure multiple matches for styleRegex
     styleRegex.lastIndex = 0;
 
-    return { styleImports, inlineStyles };
+    return { styleImports: styleImportsString, inlineStyles };
   } catch (err) {
     console.error(`Failed to scrape styles from ${url}:`, err);
     return { styleImports: '', inlineStyles: '' };
   }
 }
 
-async function modifyFile(destPath) {
+async function modifyFile(destPath, functionVars) {
   try {
     // URL to scrape
     const url = process.env.WORDPRESS_GRAPHQL_ENDPOINT;
 
     // Scrape styles from the URL
-    const { styleImports, inlineStyles } = await scrapeStylesFromURL(url);
+    const { styleImports, inlineStyles } = await scrapeStylesFromURL(url, functionVars.extraImports);
 
     // Read the current content of the destination file
     let currentContent = fs.readFileSync(destPath, 'utf8');

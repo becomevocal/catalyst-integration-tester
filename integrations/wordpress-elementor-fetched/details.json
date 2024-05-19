@@ -17,12 +17,20 @@
     {
       "to": ".env.local",
       "method": "append",
-      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT"
+      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT",
+      "default": "https://moar-tools-moar-progress.com/graphql"
     },
     {
       "to": "app/globals.css",
       "method": "function",
-      "file": "./build-functions/fetch-styles.cjs"
+      "file": "./build-functions/fetch-styles.cjs",
+      "vars": {
+        "extraImports": [
+          "/wp-content/plugins/elementor/assets/css/widget-icon-list.min.css",
+          "/wp-content/plugins/elementor/assets/css/widget-tabs.min.css",
+          "/wp-content/plugins/elementor/assets/css/widget-toggle.min.css"
+        ]
+      }
     },
     {
       "to": "app/[locale]/layout.tsx",
@@ -31,9 +39,19 @@
     }
   ],
   "preInstall": {
-    "instructions": "You should first install the WP GraphQL plugin to your website: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard"
+    "instructions": "You should first install the WPGraphQL plugin on your WordPress site: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard \n\nThen, add the code within preinstall.md to the functions.php file in your WordPress theme."
   },
   "postInstall": {
-    "instructions": "You should now update the ENV variable for your WordPress GraphQL endpoint."
-  }
+    "instructions": "Start up your dev server and Elementor pages should now be rendering in the site at their registered slugs."
+  },
+  "troubleshooting": [
+    {
+      "issue": "All pages return a \"not found\" error.",
+      "solve": "Make sure you have installed and activated the WPGraphQL plugin: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard"
+    },
+    {
+      "issue": "Cannot query field \"elementorContent\" on type \"Page\".",
+      "solve": "The WPGraphQL plugin needs to be extended to return this field in the response. To do this, add the code within preinstall.md to the functions.php file in your WordPress theme."
+    }
+  ]
 }

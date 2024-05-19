@@ -1,6 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const cp = require('child_process');
+const { platform } = require('os');
+
+const WINDOWS_PLATFORM = 'win32';
+const MAC_PLATFORM = 'darwin';
+const osPlatform = platform();
 
 const integrationsPath = path.join(__dirname);
 const configFilePath = path.join(__dirname, '..', 'tailwind.config.js');
@@ -10,14 +16,14 @@ const catalystFilePath = path.join(__dirname, '..', 'catalyst.json');
 const args = process.argv.slice(2);
 const forceConfirm = args.includes('-f');
 let selectedIntegrationName = null;
-const selectedIndexArg = args.findIndex(arg => arg === '-s');
+const selectedIndexArg = args.findIndex((arg) => arg === '-s');
 if (selectedIndexArg !== -1 && args.length > selectedIndexArg + 1) {
   selectedIntegrationName = args[selectedIndexArg + 1];
 }
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 async function listIntegrations() {
@@ -33,12 +39,24 @@ async function listIntegrations() {
           path: detailsPath,
           directoryName: dir.name,
           name: data.name,
-          description: data.description
+          description: data.description,
         });
       }
     }
   }
   return integrations;
+}
+
+function askForInput(question, defaultValue) {
+  return new Promise((resolve) => {
+    if (forceConfirm) {
+      resolve(defaultValue);
+    } else {
+      rl.question(question, (answer) => {
+        resolve(answer.trim());
+      });
+    }
+  });
 }
 
 function askForSelection(question) {
@@ -70,9 +88,29 @@ async function processIntegration(integration) {
   const details = JSON.parse(fs.readFileSync(integration.path, 'utf8'));
 
   if (details.preInstall && details.preInstall.instructions) {
-    console.log("\nPre-installation Instructions:");
+    console.log('\nPre-installation Instructions:');
     console.log(details.preInstall.instructions + "\n\n");
-    await askForSelection('Press Enter to confirm you have read and understood the pre-installation instructions and wish to proceed...');
+
+    const confirmation = await askForInput(
+      "Enter 'o' to open up more details in your browser, or any other value to confirm you're ready to proceed...",
+      '',
+    );
+
+    if (confirmation === 'o') {
+      let command;
+      const mdPath = integration.path.replace('details.json', 'preinstall.md');
+
+      if (osPlatform === WINDOWS_PLATFORM) {
+        command = `start microsoft-edge:${mdPath}`;
+      } else if (osPlatform === MAC_PLATFORM) {
+        command = `open -a "Google Chrome" ${mdPath}`;
+      } else {
+        command = `google-chrome --no-sandbox ${mdPath}`;
+      }
+      console.log(`executing command: ${command}`);
+
+      cp.exec(command);
+    }
   }
 
   if (details.replaces && details.replaces.length > 0) {
@@ -80,12 +118,15 @@ async function processIntegration(integration) {
       const srcPath = path.resolve(integrationsPath, integration.directoryName, replacement.with);
       const destPath = path.resolve(__dirname, '..', replacement.dir);
 
-      if (!srcPath.startsWith(integrationsPath) || !destPath.startsWith(path.resolve(__dirname, '..'))) {
+      if (
+        !srcPath.startsWith(integrationsPath) ||
+        !destPath.startsWith(path.resolve(__dirname, '..'))
+      ) {
         console.error('Invalid path detected. Aborting operation.');
         continue;
       }
 
-      const confirm = await askForConfirmation(`\nReplace ${destPath} with ${srcPath}? (yes/no) `);
+      const confirm = await askForConfirmation(`\nReplace ${destPath} with ${srcPath}? (y/N) `);
       if (confirm) {
         if (replacement.method === 'fs-copy') {
           fs.cp(srcPath, destPath, { recursive: true }, (err) => {
@@ -109,19 +150,26 @@ async function processIntegration(integration) {
 
   if (details.adds && details.adds.length > 0) {
     for (const addition of details.adds) {
-      const confirm = await askForConfirmation(`\nAdd to ${addition.to}? (yes/no) `);
+      const confirm = await askForConfirmation(`\nAdd to ${addition.to}? (y/N) `);
       if (confirm) {
         if (addition.method === 'append' && (addition.fileContents || addition.envVar)) {
           let content = '';
           if (addition.fileContents) {
-            const srcPath = path.resolve(integrationsPath, integration.directoryName, addition.fileContents);
+            const srcPath = path.resolve(
+              integrationsPath,
+              integration.directoryName,
+              addition.fileContents,
+            );
             if (!srcPath.startsWith(integrationsPath)) {
               console.error('Invalid file content path detected. Aborting operation.');
               continue;
             }
-            content = "\n" + fs.readFileSync(srcPath, 'utf8');
+            content = '\n' + fs.readFileSync(srcPath, 'utf8');
           } else if (addition.envVar) {
-            content = "\n" + addition.envVar + '=""';
+            const envVarValue = await askForInput(
+              `\nWhat would you like to use as ${addition.envVar}? `,
+            );
+            content = '\n' + addition.envVar + `="${envVarValue}"`;
           }
 
           const destPath = path.resolve(__dirname, '..', addition.to);
@@ -157,7 +205,11 @@ async function processIntegration(integration) {
           recordIntegration(integration.directoryName, 'added', addition);
         } else if (addition.method === 'function' && addition.file) {
           // Validate that the function file is within the integrations directory
-          const functionPath = path.resolve(integrationsPath, integration.directoryName, addition.file);
+          const functionPath = path.resolve(
+            integrationsPath,
+            integration.directoryName,
+            addition.file,
+          );
           if (!functionPath.startsWith(integrationsPath)) {
             console.error(`Function file ${addition.file} is not in the integrations directory.`);
             continue;
@@ -171,7 +223,7 @@ async function processIntegration(integration) {
               console.error('Invalid destination path detected. Aborting operation.');
               continue;
             }
-            await runFunction(destPath);
+            await runFunction(destPath, addition.vars);
             console.log(`Successfully processed ${addition.to} using custom function`);
             recordIntegration(integration.directoryName, 'added', addition);
           } catch (err) {
@@ -190,7 +242,7 @@ async function processIntegration(integration) {
 
   // Output post-install instructions
   if (details.postInstall && details.postInstall.instructions) {
-    console.log("\nPost-installation Instructions:");
+    console.log('\nPost-installation Instructions:');
     console.log(details.postInstall.instructions);
   }
 
@@ -210,7 +262,7 @@ async function recordIntegration(integrationName, action, details) {
   catalyst[integrationName].push({
     date: currentDate,
     action,
-    details
+    details,
   });
 
   fs.writeFileSync(catalystFilePath, JSON.stringify(catalyst, null, 2));
@@ -227,7 +279,7 @@ async function main() {
       if (catalyst[integrationName]) {
         const lastRunDetails = catalyst[integrationName][catalyst[integrationName].length - 1];
         console.log(`ℹ️ This integration was last processed on ${lastRunDetails.date}`);
-        const confirmRun = await askForConfirmation('Do you want to run it again? (yes/no) ');
+        const confirmRun = await askForConfirmation('Do you want to run it again? (y/N) ');
         if (confirmRun) {
           await processIntegration(selectedIntegration);
         } else {
@@ -245,7 +297,7 @@ async function main() {
 
 async function selectIntegration(integrations) {
   if (selectedIntegrationName) {
-    const integration = integrations.find(int => int.directoryName === selectedIntegrationName);
+    const integration = integrations.find((int) => int.directoryName === selectedIntegrationName);
     if (integration) {
       console.log(`Automatically selected: ${integration.name}`);
       console.log(`Description: ${integration.description}`);
@@ -259,7 +311,9 @@ async function selectIntegration(integrations) {
       console.log(`${index + 1}: ${integration.name}`);
     });
 
-    const input = await askForSelection('Enter the number of the integration you want to process: ');
+    const input = await askForSelection(
+      'Enter the number of the integration you want to process: ',
+    );
     const index = parseInt(input, 10) - 1;
 
     if (!isNaN(index) && index >= 0 && index < integrations.length) {
@@ -268,7 +322,7 @@ async function selectIntegration(integrations) {
       return integrations[index];
     } else {
       console.log('\n*Invalid selection. Please enter a valid number.* \n');
-      return selectIntegration(integrations);  // Recurse until a valid input is given
+      return selectIntegration(integrations); // Recurse until a valid input is given
     }
   }
 }
