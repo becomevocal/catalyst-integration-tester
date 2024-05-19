@@ -35,6 +35,6 @@
     "instructions": "You should first install the WP GraphQL plugin to your website: https://www.wpgraphql.com/docs/quick-start#install-from-your-wordpress-dashboard"
   },
   "postInstall": {
-    "instructions": "You should now update the ENV variable for your WordPress GraphQL endpoint."
+    "instructions": "Start up your dev server and visit a page slug you have in WordPress."
   }
 }

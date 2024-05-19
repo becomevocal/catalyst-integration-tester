@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { PageContent } from '../_components/page-content';
 import { ElementorScriptReinitializer } from '../_components/elementor-script-handler';
 
-import { getWordPressPage } from '~/integrations/wordpress-elementor-fetched/data-fetcher';
+import { getWordPressPage } from '~/integrations/wordpress-elementor-site-fetch/data-fetcher';
 
 interface Props {
   params: { page: string; locale: string };

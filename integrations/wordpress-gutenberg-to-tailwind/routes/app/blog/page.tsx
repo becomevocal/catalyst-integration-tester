@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server';
 import { BlogPostCard } from '~/components/blog-post-card';
 import { Link } from '~/components/link';
 import { LocaleType } from '~/i18n';
-import { getWordPressPosts } from '~/integrations/wordpress-elementor-fetched/data-fetcher';
+import { getWordPressPosts } from '~/integrations/wordpress-gutenberg-to-tailwind/data-fetcher';
 
 interface Props {
   params: { locale: LocaleType };

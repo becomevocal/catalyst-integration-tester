@@ -1,30 +1,21 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { BlogPostCard } from '~/components/blog-post-card';
 import { Link } from '~/components/link';
-import { LocaleType } from '~/i18n';
-import { getWordPressPosts } from '~/integrations/wordpress/data-fetcher';
+import { getWordPressPosts } from '~/integrations/wordpress-elementor-site-fetch/data-fetcher';
 
 interface Props {
-  params: { locale: LocaleType };
+  params: {
+    tagId: string;
+    locale: string;
+  };
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const blogPosts = await getWordPressPosts(searchParams);
-
-  const title = blogPosts?.name ?? 'Blog';
-
-  return {
-    title,
-  };
-}
-
-export default async function BlogPostPage({ params: { locale }, searchParams }: Props) {
-  const blogPosts = await getWordPressPosts({ locale, ...searchParams });
+export default async function BlogPostPage({ params: { tagId, locale }, searchParams }: Props) {
+  const blogPosts = await getWordPressPosts({ tagId, locale, ...searchParams, });
   const t = await getTranslations({ locale, namespace: 'Pagination' });
 
   if (!blogPosts || !blogPosts.isVisibleInNavigation) {
@@ -45,7 +36,7 @@ export default async function BlogPostPage({ params: { locale }, searchParams }:
         {blogPosts.posts.pageInfo.hasPreviousPage ? (
           <Link
             className="focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20"
-            href={`/blog?before=${String(blogPosts.posts.pageInfo.startCursor)}`}
+            href={`/blog/tag/${tagId}?before=${String(blogPosts.posts.pageInfo.startCursor)}`}
             scroll={false}
           >
             <span className="sr-only">{t('prev')}</span>
@@ -57,7 +48,7 @@ export default async function BlogPostPage({ params: { locale }, searchParams }:
         {blogPosts.posts.pageInfo.hasNextPage ? (
           <Link
             className="focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20"
-            href={`/blog?after=${String(blogPosts.posts.pageInfo.endCursor)}`}
+            href={`/blog/tag/${tagId}?after=${String(blogPosts.posts.pageInfo.endCursor)}`}
             scroll={false}
           >
             <span className="sr-only">{t('next')}</span>

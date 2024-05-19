@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { WordPressBlocksRenderer } from '~/integrations/wordpress/server-components';
-import { getWordPressPage } from '~/integrations/wordpress/data-fetcher';
+import { WordPressBlocksRenderer } from '~/integrations/wordpress-gutenberg-to-tailwind/server-components';
+import { getWordPressPage } from '~/integrations/wordpress-gutenberg-to-tailwind/data-fetcher';
 
 interface Props {
   params: { page: string; locale: string };

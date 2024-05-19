@@ -14,7 +14,7 @@ import { BcImage } from '~/components/bc-image';
 import { Link } from '~/components/link';
 import { SharingLinks } from '~/components/sharing-links';
 import { LocaleType } from '~/i18n';
-import { getWordPressPost } from '~/integrations/wordpress/data-fetcher';
+import { getWordPressPost } from '~/integrations/wordpress-elementor-site-fetch/data-fetcher';
 
 interface Props {
   params: {
