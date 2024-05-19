@@ -22,7 +22,8 @@
     {
       "to": ".env.local",
       "method": "append",
-      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT"
+      "envVar": "WORDPRESS_GRAPHQL_ENDPOINT",
+      "default": ""
     },
     {
       "to": "tailwind.config.js",

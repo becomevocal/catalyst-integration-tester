@@ -33,7 +33,13 @@ times before. You can instead go straight to work building your brand and making
 
 ## Deploy w/ WP Integration
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET,WORDPRESS_GRAPHQL_ENDPOINT&install-command=npm%20run%20initialize%20--integration=wordpress)
+**Gutenberg w/ on-the-fly conversion to Tailwind CSS**
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET,WORDPRESS_GRAPHQL_ENDPOINT&install-command=npm%20run%20initialize%20--integration=wordpress-gutenberg-to-tailwind)
+
+**Elementor w/ fetch of site scripts and styles**
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbecomevocal%2Fcatalyst-integration-tester&env=AUTH_SECRET,BIGCOMMERCE_STORE_HASH,BIGCOMMERCE_CHANNEL_ID,BIGCOMMERCE_ACCESS_TOKEN,BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN,ENABLE_ADMIN_ROUTE,NEXT_PUBLIC_DEFAULT_REVALIDATE_TARGET,WORDPRESS_GRAPHQL_ENDPOINT&install-command=npm%20run%20initialize%20--integration=wordpress-elementor-site-fetch)
 
 ## Requirements
 

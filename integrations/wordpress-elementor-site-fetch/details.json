@@ -18,7 +18,7 @@
       "to": ".env.local",
       "method": "append",
       "envVar": "WORDPRESS_GRAPHQL_ENDPOINT",
-      "default": "https://moar-tools-moar-progress.com/graphql"
+      "default": ""
     },
     {
       "to": "app/globals.css",
