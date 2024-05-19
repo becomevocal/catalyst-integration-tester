@@ -200,7 +200,7 @@ function transformDataToBlogPosts(apiResponse: any, tagId: string | undefined) {
 }
 
 function transformDataToBlogPost(apiResponse: any, vanityUrl: string) {
-  console.log('apiResponse.data.post', apiResponse.data.post, 'vanity', vanityUrl);
+  // console.log('apiResponse.data.post', apiResponse.data.post, 'vanity', vanityUrl);
   return {
     author: apiResponse.data.post.author.node.firstName
       ? `${apiResponse.data.post.author.node.firstName} ${apiResponse.data.post.author.node.lastName}`

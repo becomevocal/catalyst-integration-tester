@@ -130,8 +130,8 @@ export async function fetchWordPressData({ query, variables }: fetchWordPressDat
     const myHeaders = new Headers();
     myHeaders.append('Content-Type', 'application/json');
 
-    console.log('query', query);
-    console.log('variables', variables);
+    // console.log('query', query);
+    // console.log('variables', variables);
 
     const graphql = JSON.stringify({
       query,
@@ -197,7 +197,7 @@ function transformDataToBlogPosts(apiResponse: any, tagId: string | undefined) {
 }
 
 function transformDataToBlogPost(apiResponse: any, vanityUrl: string) {
-  console.log('apiResponse.data.post', apiResponse.data.post, 'vanity', vanityUrl);
+  // console.log('apiResponse.data.post', apiResponse.data.post, 'vanity', vanityUrl);
   return {
     author: apiResponse.data.post.author.node.firstName
       ? `${apiResponse.data.post.author.node.firstName} ${apiResponse.data.post.author.node.lastName}`
