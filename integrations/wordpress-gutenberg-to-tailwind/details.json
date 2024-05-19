@@ -1,6 +1,6 @@
 {
   "name": "WordPress w/ Gutenberg to TailwindCSS conversion",
-  "description": "Replaces the built-in blog and webpages with WordPress. The pages support the Gutenberg editor through on-the-fly replacement of wp-* classes with TailwindCSS.",
+  "description": "Replaces the built-in blog and webpages with WordPress. Pages support the Gutenberg editor through on-the-fly replacement of wp-* classes with TailwindCSS.",
   "replaces": [
     {
       "dir": "app/[locale]/(default)/(webpages)",

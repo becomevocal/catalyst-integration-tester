@@ -3,7 +3,7 @@
   const chalk = chalkModule.default;
   const { Command } = await import('commander');
   const inquirerModule = await import('@inquirer/prompts');
-  const { input, confirm } = inquirerModule;
+  const { input, confirm, select } = inquirerModule;
 
   const fs = require('fs');
   const path = require('path');
@@ -296,24 +296,23 @@
       }
     } else {
       console.log(chalk.yellow('\n◢ Catalyst Integrations:'));
-      integrations.forEach((integration, index) => {
-        console.log(`${index + 1}: ${integration.name}`);
+
+      const response = await select({
+        message: 'Select the integration you want to process:',
+        choices: integrations.map((integration, index) => ({
+          name: `${index + 1}: ${integration.name}`,
+          description: integration.description,
+          value: integration.directoryName,
+        })),
       });
 
-      const response = await input({
-        message: 'Enter the number of the integration you want to process: ',
-        validate: (input) => {
-          const index = parseInt(input, 10) - 1;
-          return !isNaN(index) && index >= 0 && index < integrations.length
-            ? true
-            : 'Please enter a valid number.';
-        },
-      });
+      const selectedIntegration = integrations.find(
+        (integration) => integration.directoryName === response
+      );
 
-      const index = parseInt(response, 10) - 1;
-      console.log(chalk.green(`\nSelected: ${integrations[index].name}`));
-      console.log(chalk.blue(`Description: ${integrations[index].description}`));
-      return integrations[index];
+      console.log(chalk.green(`\nSelected: ${selectedIntegration.name}`));
+      console.log(chalk.blue(`Description: ${selectedIntegration.description}`));
+      return selectedIntegration;
     }
   }
 
