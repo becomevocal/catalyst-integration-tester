@@ -39,7 +39,7 @@ export default async function WebPage({ params: { locale, page } }: Props) {
   return (
     <>
       <ElementorScriptReinitializer />
-      <div className={`elementor-kit-${webpage.data.page.elementorKitId} mx-0 pl-0 sm:-mx-10 sm:pl-10 lg:-mx-12 lg:pl-12`}>
+      <div className={`elementor-kit-${webpage.data.page.elementorKitId} mx-0 pl-0 sm:-mx-10 sm:pl-10 lg:-mx-12 lg:pl-12 pt-24`}>
         <PageContent content={webpage.data.page.elementorContent} />
       </div>
     </>

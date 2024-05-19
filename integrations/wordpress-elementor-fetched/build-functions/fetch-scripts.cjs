@@ -78,6 +78,11 @@ async function modifyFile(destPath) {
     // Append the scraped styles to the file content
     currentContent = `${currentContent[0]}\n{/* Scripts (Start) */}${scripts}\n{/* Scripts (End) */}\n</html>${currentContent[1]}`;
 
+    if (currentContent.indexOf('next/script') === -1) {
+      // Import next/script if it isn't found in the file
+      currentContent = `import Script from 'next/script';\n${currentContent}`;
+    }
+
     // Write the updated content back to the file
     fs.writeFileSync(destPath, currentContent, 'utf8');
     console.log(`Modified ${destPath} successfully.`);
