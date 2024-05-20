@@ -83,28 +83,35 @@
       console.log(chalk.yellow('\nPre-installation Instructions:'));
       console.log(details.preInstall.instructions + "\n\n");
 
-      const confirmation = await askForInput(
-        "Enter 'o' to open up more details in your browser, or any other value to confirm you're ready to proceed...",
-        '',
-      );
+      // todo: check if preinstall.md exists before prompting this
+      // If there is, say "1) open up more details in browser and continue 2) continue without viewing more details"
 
-      if (confirmation === 'o') {
-        let command;
-        const mdPath = integration.path.replace('details.json', 'preinstall.md');
+      const preinstallDocPath = integration.path.replace('details.json', 'preinstall.md');
+      if (fs.existsSync(preinstallDocPath)) {
+        const confirmation = await askForInput(
+          "Enter 'o' to open up more details in your browser, or any other value to confirm you're ready to proceed...",
+          '',
+        );
 
-        if (osPlatform === WINDOWS_PLATFORM) {
-          command = `start microsoft-edge:${mdPath}`;
-        } else if (osPlatform === MAC_PLATFORM) {
-          command = `open -a "Google Chrome" ${mdPath}`;
-        } else {
-          command = `google-chrome --no-sandbox ${mdPath}`;
+        if (confirmation === 'o') {
+          let command;
+          
+
+          if (osPlatform === WINDOWS_PLATFORM) {
+            command = `start microsoft-edge:${preinstallDocPath}`;
+          } else if (osPlatform === MAC_PLATFORM) {
+            command = `open -a "Google Chrome" ${preinstallDocPath}`;
+          } else {
+            command = `google-chrome --no-sandbox ${preinstallDocPath}`;
+          }
+          console.log(`executing command: ${command}`);
+
+          cp.exec(command);
         }
-        console.log(`executing command: ${command}`);
-
-        cp.exec(command);
       }
     }
 
+    // Process all 'replace' steps
     if (details.replaces && details.replaces.length > 0) {
       for (const replacement of details.replaces) {
         const srcPath = path.resolve(integrationsPath, integration.directoryName, replacement.with);
@@ -140,6 +147,7 @@
       console.log(chalk.blue('No replacement operations found.'));
     }
 
+    // Process all 'add' steps
     if (details.adds && details.adds.length > 0) {
       for (const addition of details.adds) {
         const confirm = await askForConfirmation(`\nAdd to ${addition.to}? (y/N) `);
