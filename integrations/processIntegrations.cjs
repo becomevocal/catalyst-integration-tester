@@ -21,6 +21,9 @@
   let forceConfirm = false;
   let selectedIntegrationName = null;
 
+  const INTEGRATION_REPO_BASE =
+    'https://github.com/becomevocal/catalyst-integration-tester/tree/main/integrations';
+
   const program = new Command();
 
   program
@@ -81,30 +84,35 @@
 
     if (details.preInstall && details.preInstall.instructions) {
       console.log(chalk.yellow('\nPre-installation Instructions:'));
-      console.log(details.preInstall.instructions + "\n\n");
-
-      // todo: check if preinstall.md exists before prompting this
-      // If there is, say "1) open up more details in browser and continue 2) continue without viewing more details"
+      console.log(details.preInstall.instructions + '\n\n');
 
       const preinstallDocPath = integration.path.replace('details.json', 'preinstall.md');
       if (fs.existsSync(preinstallDocPath)) {
-        const confirmation = await askForInput(
-          "Enter 'o' to open up more details in your browser, or any other value to confirm you're ready to proceed...",
-          '',
-        );
+        const answer = await select({
+          message: 'What would you like to do next?',
+          choices: [
+            {
+              name: 'Open up more detailed instructions in browser',
+              value: 'openDetails',
+            },
+            {
+              name: 'Continue without reading more details',
+              value: 'continue',
+            },
+          ],
+        });
 
-        if (confirmation === 'o') {
+        if (answer === 'openDetails') {
           let command;
-          
 
+          const preInstallUrl = `${INTEGRATION_REPO_BASE}/${integration.directoryName}/preinstall.md`;
           if (osPlatform === WINDOWS_PLATFORM) {
-            command = `start microsoft-edge:${preinstallDocPath}`;
+            command = `start microsoft-edge:${preInstallUrl}`;
           } else if (osPlatform === MAC_PLATFORM) {
-            command = `open -a "Google Chrome" ${preinstallDocPath}`;
+            command = `open -a "Google Chrome" ${preInstallUrl}`;
           } else {
-            command = `google-chrome --no-sandbox ${preinstallDocPath}`;
+            command = `google-chrome --no-sandbox ${preInstallUrl}`;
           }
-          console.log(`executing command: ${command}`);
 
           cp.exec(command);
         }
@@ -125,22 +133,22 @@
           continue;
         }
 
-        const confirm = await askForConfirmation(`\nReplace ${destPath} with ${srcPath}? (y/N) `);
+        const confirm = await askForConfirmation(`\nReplace ${replacement.dir}? (y/N) `);
         if (confirm) {
           if (replacement.method === 'fs-copy') {
             fs.cp(srcPath, destPath, { recursive: true }, (err) => {
               if (err) {
-                console.error(chalk.red(`Error copying from ${replacement.dir} to ${replacement.with}:`), err);
+                console.error(
+                  chalk.red(`Error copying from ${replacement.with} to ${replacement.dir}:`),
+                  err,
+                );
               } else {
-                console.log(chalk.green(`✅ Successfully copied from ${replacement.dir} to ${replacement.with}`));
                 recordIntegration(integration.directoryName, 'replaced', replacement);
               }
             });
           } else {
             console.log(chalk.red(`Unknown method ${replacement.method}`));
           }
-        } else {
-          console.log(chalk.blue(`Skipping replacement of ${destPath}`));
         }
       }
     } else {
@@ -174,7 +182,6 @@
 
             const destPath = path.resolve(__dirname, '..', addition.to);
             fs.appendFileSync(destPath, content);
-            console.log(chalk.green(`Successfully appended contents to ${addition.to}`));
             recordIntegration(integration.directoryName, 'added', addition);
           } else if (addition.to === 'tailwind.config.js') {
             fs.readFile(configFilePath, 'utf8', (err, data) => {
@@ -195,7 +202,6 @@
                   console.error(chalk.red('Error writing Tailwind config file:'), err);
                   return;
                 }
-                console.log(chalk.green(`Tailwind config file '${addition.key}' key updated successfully!`));
               });
             });
           } else if (addition.to === 'graphql-client') {
@@ -211,7 +217,9 @@
               addition.file,
             );
             if (!functionPath.startsWith(integrationsPath)) {
-              console.error(chalk.red(`Function file ${addition.file} is not in the integrations directory.`));
+              console.error(
+                chalk.red(`Function file ${addition.file} is not in the integrations directory.`),
+              );
               continue;
             }
 
@@ -224,16 +232,16 @@
                 continue;
               }
               await runFunction(destPath, addition.vars);
-              console.log(chalk.green(`Successfully processed ${addition.to} using custom function`));
               recordIntegration(integration.directoryName, 'added', addition);
             } catch (err) {
-              console.error(chalk.red(`Error processing ${addition.to} using custom function:`), err);
+              console.error(
+                chalk.red(`Error processing ${addition.to} using custom function:`),
+                err,
+              );
             }
           } else {
             console.log(chalk.red(`Unknown method ${addition.method}`));
           }
-        } else {
-          console.log(chalk.blue(`Skipping updates to ${addition.to}`));
         }
       }
     } else {
@@ -264,7 +272,6 @@
     });
 
     fs.writeFileSync(catalystFilePath, JSON.stringify(catalyst, null, 2));
-    console.log(chalk.green(`Recorded ${integrationName} integration on ${currentDate}`));
   }
 
   async function main() {
@@ -276,7 +283,9 @@
         const integrationName = selectedIntegration.directoryName;
         if (catalyst[integrationName]) {
           const lastRunDetails = catalyst[integrationName][catalyst[integrationName].length - 1];
-          console.log(chalk.yellow(`ℹ️ This integration was last processed on ${lastRunDetails.date}`));
+          console.log(
+            chalk.yellow(`ℹ️ This integration was last processed on ${lastRunDetails.date}`),
+          );
           const confirmRun = await askForConfirmation('Do you want to run it again? (y/N) ');
           if (confirmRun) {
             await processIntegration(selectedIntegration);
@@ -300,7 +309,9 @@
         console.log(chalk.blue(`Description: ${integration.description}`));
         return integration;
       } else {
-        console.log(chalk.red(`No integration found with directory name: ${selectedIntegrationName}`));
+        console.log(
+          chalk.red(`No integration found with directory name: ${selectedIntegrationName}`),
+        );
       }
     } else {
       console.log(chalk.yellow('\n◢ Catalyst Integrations:'));
@@ -315,7 +326,7 @@
       });
 
       const selectedIntegration = integrations.find(
-        (integration) => integration.directoryName === response
+        (integration) => integration.directoryName === response,
       );
 
       console.log(chalk.green(`\nSelected: ${selectedIntegration.name}`));
