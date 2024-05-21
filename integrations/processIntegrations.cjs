@@ -73,7 +73,7 @@
     } else {
       const response = await confirm({
         message: question,
-        default: false,
+        default: true,
       });
       return response;
     }
@@ -133,7 +133,7 @@
           continue;
         }
 
-        const confirm = await askForConfirmation(`\nReplace ${replacement.dir}? (y/N) `);
+        const confirm = await askForConfirmation(`Replace ${replacement.dir}?`);
         if (confirm) {
           if (replacement.method === 'fs-copy') {
             fs.cp(srcPath, destPath, { recursive: true }, (err) => {
@@ -158,7 +158,7 @@
     // Process all 'add' steps
     if (details.adds && details.adds.length > 0) {
       for (const addition of details.adds) {
-        const confirm = await askForConfirmation(`\nAdd to ${addition.to}? (y/N) `);
+        const confirm = await askForConfirmation(`Add to ${addition.to}?`);
         if (confirm) {
           if (addition.method === 'append' && (addition.fileContents || addition.envVar)) {
             let content = '';
@@ -251,7 +251,7 @@
     // Output post-install instructions
     if (details.postInstall && details.postInstall.instructions) {
       console.log(chalk.yellow('\nPost-installation Instructions:'));
-      console.log(details.postInstall.instructions);
+      console.log(details.postInstall.instructions + '\n');
     }
   }
 
@@ -284,9 +284,9 @@
         if (catalyst[integrationName]) {
           const lastRunDetails = catalyst[integrationName][catalyst[integrationName].length - 1];
           console.log(
-            chalk.yellow(`ℹ️ This integration was last processed on ${lastRunDetails.date}`),
+            chalk.yellow(`\n💁 This integration was last ran on ${lastRunDetails.date}`),
           );
-          const confirmRun = await askForConfirmation('Do you want to run it again? (y/N) ');
+          const confirmRun = await askForConfirmation('Do you want to run it again?');
           if (confirmRun) {
             await processIntegration(selectedIntegration);
           } else {
@@ -306,7 +306,7 @@
       const integration = integrations.find((int) => int.directoryName === selectedIntegrationName);
       if (integration) {
         console.log(chalk.green(`Automatically selected: ${integration.name}`));
-        console.log(chalk.blue(`Description: ${integration.description}`));
+        console.log(integration.description);
         return integration;
       } else {
         console.log(
@@ -330,7 +330,7 @@
       );
 
       console.log(chalk.green(`\nSelected: ${selectedIntegration.name}`));
-      console.log(chalk.blue(`Description: ${selectedIntegration.description}`));
+      console.log(selectedIntegration.description);
       return selectedIntegration;
     }
   }
